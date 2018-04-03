@@ -18,11 +18,16 @@ public class Player : NetworkBehaviour {
 
 	private GameObject image;
 
+	public Text debug;
+
 	[SerializeField]
 	public GameObject placeholder;
 	// Use this for initialization
 	void Start () {
-		this.GetComponent<InputField> ().onEndEdit.AddListener (submitName);
+		if (this.isServer)
+			this.GetComponent<InputField> ().onEndEdit.AddListener (submitName);
+		else
+			this.GetComponent<InputField> ().onEndEdit.AddListener (CmdsubmitName);
 		this.gameObject.SetActive(false);
 		player_num = 0;
 		player_count = 0;
@@ -48,36 +53,23 @@ public class Player : NetworkBehaviour {
 		Debug.Log ("onPlayer_numChange");
 	}
 
-	void onPlayer_countChange(int player_count){
-		if (player_count>=player_num) {
+	void submitName(string arg0){
+
+		player_num = int.Parse (arg0);
+		Debug.Log ("server");
+		
+	}
+
+	[Command]
+	void CmdsubmitName(string arg0){
+		players.Add (arg0);
+		player_count++;
+
+		if (player_count >= player_num) {
 			this.gameObject.SetActive (false);
 		}
-		Debug.Log ("onPlayer_countChange");
-	}
-
-
-	void submitName(string arg0){
-		Debug.Log ("submitName");
-		if (!this.isServer) {
-			Debug.Log ("lksdgfadlk");
-			image = Instantiate (image, new Vector2 (0, 0), Quaternion.identity);
-			image.transform.SetParent (GameObject.Find ("BackGround").transform);
-		}
-		if (this.isServer) {
-			player_num = int.Parse (arg0);
-			Debug.Log ("server");
-		} else {
-			players.Add (arg0);
-			player_count++;
-			Debug.Log ("client");
-		}
-	}
-
-	void submitNameFromClient(string arg0){
-	
 	}
 
 	void FixedUpdate(){
-
 	}
 }
