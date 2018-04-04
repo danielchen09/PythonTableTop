@@ -49,8 +49,6 @@ class Planet{
 
 		planet.AddComponent<Button> ();
 
-		planet.AddComponent<AudioListener> ();
-
 		clone = GameObject.Instantiate (planet, GameObject.Find(parent.name).GetComponent<RectTransform>(), false);
 		clone.transform.SetParent (parent.transform);
 		clone.GetComponent<Button> ().onClick.AddListener (planetInfo);
