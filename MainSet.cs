@@ -28,8 +28,15 @@ public class MainSet{
 
 	public void draw(Player player){
 		int r = Random.Range (0, mainSet.Count);
-		player.addCard (mainSet [r]);
-		mainSet.RemoveAt (r);
+		if (!mainSet [r].getTag ().Equals ("X")) {
+			player.addCard (mainSet [r]);
+			mainSet.RemoveAt (r);
+		} else {
+			if (mainSet [r].getName ().Equals ("VOLCANO"))
+				player.removeCardByTag ("M", this);
+			else
+				player.removeCardByTag ("E", this);
+		}
 	}
 
 	public void addCard(Card card){
