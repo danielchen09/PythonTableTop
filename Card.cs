@@ -4,7 +4,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
 
-class Card{
+public class Card{
 
 	private GameObject card;
 	private GameObject clone;
@@ -21,9 +21,15 @@ class Card{
 	private int value;
 	private int attack;
 	private int defense;
+	private Player owner;
+	private Planet planet_deploy;
+	private int deploy_mode;
 
-	public Card(string name){
+	public Card(string name, GameObject parent){
 		this.name = name;
+		this.parent = parent;
+
+		setAttributes ();
 	}
 
 	public Card(string name, GameObject parent, Vector2 position, Vector2 size){
@@ -31,6 +37,7 @@ class Card{
 		this.parent = parent;
 		this.position = position;
 		this.size = size;
+		setAttributes ();
 
 		instantiateCard ();
 	}
@@ -38,14 +45,16 @@ class Card{
 	private void setTag(){
 		if (name.Equals ("CRYSTAL") || name.Equals ("IRON") || name.Equals ("STONE"))
 			tag = "M";
-		else if (name.Equals ("LASER") || name.Equals ("MECH") || name.Equals ("SPACECRAFT"))
-			tag = "E";
 		else if (name.Equals ("EMP") || name.Equals ("VOLCANO"))
-			tag = "D";
+			tag = "X";
 		else
-			tag = "NONE";
+			tag = "E";
 	}
 
+	public string getTag(){
+		return tag;
+	}
+		
 	public void instantiateCard(){
 		card = new GameObject();
 		card.AddComponent<Image> ();
@@ -55,8 +64,6 @@ class Card{
 		card.GetComponent<RectTransform> ().sizeDelta = size;
 
 		card.AddComponent<Button> ();
-
-		card.AddComponent<AudioListener> ();
 
 		card.AddComponent<EventTrigger> ();
 
@@ -74,7 +81,6 @@ class Card{
 		mouseExit.callback.AddListener ((data) => {
 			OnPointerExitDelegate ((PointerEventData)data);
 		});
-
 		clone.GetComponent<EventTrigger> ().triggers.Add (mouseEnter);
 		clone.GetComponent<EventTrigger> ().triggers.Add (mouseExit);
 		clone.gameObject.tag = "CARD";
@@ -103,7 +109,117 @@ class Card{
 	}
 
 	public void skill(){
-	
+		
+	}
+
+	public void setAttributes(){
+		/*deploy_mode
+		 *0 undeployable
+		 *1 deployable
+		 *2 deploy while attack
+		 */
+		switch (name) {
+		case "CRYSTAL":
+			value = 20;
+			cost = 0;
+			attack = 0;
+			defense = 0;
+			deploy_mode = 1;
+			break;
+		case "EMP":
+			value = 0;
+			cost = 0;
+			attack = 0;
+			defense = 0;
+			deploy_mode = 0;
+			break;
+		case "IRON":
+			value = 10;
+			cost = 0;
+			defense = 2;
+			attack = 0;
+			deploy_mode = 1;
+			break;
+		case "LASER":
+			value = 0;
+			cost = 100;
+			defense = 0;
+			attack = 0;
+			deploy_mode = 1;
+			break;
+		case "MECH":
+			value = 0;
+			cost = 50;
+			defense = 0;
+			attack = setAttack (2, 1, 0);
+			deploy_mode = 2;
+			break;
+		case "RECON":
+			value = 0;
+			cost = 10;
+			defense = 0;
+			attack = 0;
+			deploy_mode = 0;
+			break;
+		case "SHIELD":
+			value = 0;
+			cost = 30;
+			defense = setDefense (2, 2, 0);
+			attack = 0;
+			deploy_mode = 1;
+			break;
+		case "SPACECRAFT":
+			value = 0;
+			cost = 50;
+			defense = 0;
+			attack = 0;
+			deploy_mode = 0;
+			break;
+		case "STONE":
+			value = 5;
+			cost = 0;
+			defense = 1;
+			attack = 0;
+			deploy_mode = 1;
+			break;
+		case "VOLCANO":
+			value = 0;
+			cost = 0;
+			defense = 0;
+			attack = 0;
+			deploy_mode = 0;
+			break;
+		case "WALL":
+			value = 0;
+			cost = 50;
+			defense = setDefense (4, 2, 0);
+			attack = 0;
+			deploy_mode = 1;
+			break;
+		case "WEAPON":
+			value = 0;
+			cost = 30;
+			defense = 0;
+			attack = setAttack (1, 1, 0);
+			deploy_mode = 2;
+			break;
+		default:
+			value = 0;
+			cost = 0;
+			attack = 0;
+			defense = 0;
+			deploy_mode = 0;
+			Debug.Log ("no such card");
+			break;
+		}
+	}
+
+	public int setAttack(int atk, int per, int total){
+		return atk*total/per;
+	}
+
+	public int setDefense(int def, int per, int total){
+		return def*total/per;
 	}
 
 	public void hide(){
