@@ -1,75 +1,49 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.UI;
-using UnityEngine.Networking;
 
-public class Player : NetworkBehaviour {
+public class Player{
 
-	[SerializeField]
 	private string name;
+	private List<Card> cards;
+	private int money;
 
-	[SyncVar(hook = "onPlayer_numChange")]
-	private int player_num;
+	public Player(string name){
+		this.name = name;
+		money = 0;
+		cards = new List<Card> ();
+	}
 
-	private int player_count;
+	public string getName(){
+		return name;
+	}
 
-	private List<string> players;
-
-	private GameObject image;
-
-	public Text debug;
-
-	[SerializeField]
-	public GameObject placeholder;
-	// Use this for initialization
-	void Start () {
-		if (this.isServer)
-			this.GetComponent<InputField> ().onEndEdit.AddListener (submitName);
-		else
-			this.GetComponent<InputField> ().onEndEdit.AddListener (CmdsubmitName);
-		this.gameObject.SetActive(false);
-		player_num = 0;
-		player_count = 0;
-
-		players = new List<string> ();
-
-		image = new GameObject ();
-		image.AddComponent<Image> ();
-		image.AddComponent<RectTransform> ();
-		image.GetComponent<RectTransform> ().sizeDelta = new Vector2 (50, 50);
-		image.GetComponent<RectTransform> ().position = new Vector2 (0, 0);
-
-		if (this.isServer) {
-			this.gameObject.SetActive (true);
-			this.GetComponentInChildren<Transform>().Find("Placeholder").GetComponent<Text>().text = "ENTER PLAYER NUM...";
+	public void displayCards(){
+		GameObject.Destroy (GameObject.FindWithTag ("CARD"));
+		//x from -224 to 261
+		//y -252
+		for (int i = 0; i < cards.Count; i++) {
+			cards [i].setPositionAndSize (new Vector2 (-224 + 485 / cards.Count / 2 * i+485/4, -242), new Vector2 (142, 197));
+			cards [i].instantiateCard ();
 		}
 	}
 
-	void onPlayer_numChange(int player_num){
-		if (!this.isServer && player_num > 0) {
-			this.gameObject.SetActive (true);
-		}
-		Debug.Log ("onPlayer_numChange");
+	public void addCard(Card card){
+		cards.Add (card);
 	}
 
-	void submitName(string arg0){
-
-		player_num = int.Parse (arg0);
-		Debug.Log ("server");
-		
+	public void removeCard(Card card, MainSet mainSet){
+		mainSet.addCard (card);
+		cards.Remove (card);
 	}
 
-	[Command]
-	void CmdsubmitName(string arg0){
-		players.Add (arg0);
-		player_count++;
-
-		if (player_count >= player_num) {
-			this.gameObject.SetActive (false);
+	public void removeCardByTag(string tag, MainSet mainSet){
+		for (int i = cards.Count - 1; i >= 0; i++) {
+			if (cards [i].getTag ().Equals(tag)) {
+				mainSet.addCard (cards [i]);
+				cards.Remove (cards [i]);
+			}
 		}
 	}
 
-	void FixedUpdate(){
-	}
 }
