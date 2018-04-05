@@ -39,6 +39,16 @@ public class MainSet{
 		}
 	}
 
+	public void drawByTag(string tag, Player player){
+		int r = Random.Range (0, mainSet.Count);
+		while (!mainSet [r].getTag ().Equals (tag)) {
+			r = Random.Range (0, mainSet.Count);
+		}
+		player.addCard (mainSet [r]);
+		mainSet.RemoveAt (r);
+	
+	}
+
 	public void addCard(Card card){
 		mainSet.Add (card);
 	}
