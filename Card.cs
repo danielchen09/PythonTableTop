@@ -28,7 +28,7 @@ public class Card{
 	public Card(string name, GameObject parent){
 		this.name = name;
 		this.parent = parent;
-
+		setTag ();
 		setAttributes ();
 	}
 
@@ -38,6 +38,7 @@ public class Card{
 		this.position = position;
 		this.size = size;
 		setAttributes ();
+		setTag ();
 
 		instantiateCard ();
 	}
@@ -232,5 +233,9 @@ public class Card{
 	}
 	public void setParent(GameObject parent){
 		this.parent = parent;
+	}
+
+	public string getName(){
+		return name;
 	}
 }
