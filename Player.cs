@@ -21,7 +21,8 @@ public class Player{
 	}
 
 	public void displayCards(){
-		GameObject.Destroy (GameObject.FindWithTag ("CARD"));
+		foreach (Card card in cards)
+			card.destroyClone ();
 		//x from -224 to 261
 		//y -252
 		int i=0;
@@ -39,17 +40,20 @@ public class Player{
 
 	public void removeCard(Card card, MainSet mainSet){
 		mainSet.addCard (card);
+		card.destroyClone ();
 		cards.Remove (card);
 	}
 
 	public void sellCard(Card card, Shop shop){
 		shop.addCard (card);
+		card.destroyClone ();
 		cards.Remove (card);
 	}
 
 	public void removeCardByTag(string tag, MainSet mainSet){
 		for (int i = cards.Count - 1; i >= 0; i--) {
 			if (cards [i].getTag ().Equals(tag)) {
+				cards [i].destroyClone ();
 				mainSet.addCard (cards [i]);
 				cards.Remove (cards [i]);
 			}
