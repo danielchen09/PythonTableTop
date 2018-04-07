@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
-class Planet{
+public class Planet{
 
 	private AudioSource audioSource;
 	private AudioClip clip_deploy;
@@ -25,6 +25,8 @@ class Planet{
 	private Text text_population;
 	private Text text_shield;
 
+	public TextLogControl logControl;
+
 	private string deployName;
 
 	public Planet(string name, GameObject parent, Vector2 position, Vector2 size, GameObject info){
@@ -37,6 +39,10 @@ class Planet{
 		audioSource = GameObject.Find ("AudioObject").GetComponent<AudioSource> ();
 
 		instantiatePlanet ();
+	}
+
+	public void setLogControl(TextLogControl logControl){
+		this.logControl = logControl;
 	}
 
 	private void instantiatePlanet(){
@@ -81,6 +87,11 @@ class Planet{
 
 			owner = deployName;
 			population++;
+
+			logControl.logText(deployName + " HAS SUCCESSFULLY DEPLOYED HIS TROOP ON (" + name.ToUpper() + ").", Color.white);
+			logControl.logText("(" + name.ToUpper() + ") NOW HAS " + population + " POPULATION.", Color.white);
+
+			logControl.logText ("12345", Color.white);
 
 			planetInfo ();
 		} else {
