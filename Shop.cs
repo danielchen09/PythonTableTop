@@ -20,28 +20,32 @@ public class Shop{
 		for (int i = 0; i < size; i++)
 			handler.getMainSet ().drawByTag ("E", this);
 	}
-		
+
 	public void displayCardPurchase(){
 		//x: -346 338 y: 105
 		//y:-86
 		//size: 108, 151
-		GameObject.Destroy (GameObject.FindWithTag ("CARD"));
+		foreach (Card card in cards)
+			card.destroyClone ();
 		for (int i = 0; i < cards.Count/2; i++) {
-			cards [i].setPositionAndSize (new Vector2 (-346 + 900 / cards.Count * 2 * i, 105), new Vector2 (108, 151));
+			cards [i].setPositionAndSize (new Vector2 (-346 + 700 / cards.Count * 2 * i, 105), new Vector2 (108, 151));
 			cards [i].setParent (handler.canvas_purchase);
 			cards [i].instantiateCard ();
-			cards [i + cards.Count / 2].setPositionAndSize (new Vector2 (-346 + 900 / cards.Count * 2 * i, -86), new Vector2 (108, 151));
-			cards [i + cards.Count / 2].setParent (handler.canvas_purchase);
-			cards [i + cards.Count / 2].instantiateCard ();
+		}
+		for (int i = cards.Count / 2; i < cards.Count; i++) {
+			cards [i].setPositionAndSize (new Vector2 (-346 + 700 / cards.Count * 2 * (i - cards.Count / 2), -86), new Vector2 (108, 151));
+			cards [i].setParent (handler.canvas_purchase);
+			cards [i].instantiateCard ();
 		}
 	}
 
 	public void displayCardSell(){
 		//-412 340
-		GameObject.Destroy (GameObject.FindWithTag ("CARD"));
+		foreach (Card card in cards)
+			card.destroyClone ();
 		List<Card> tmp = handler.getPlaying ().getCards ();
 		for (int i = 0; i < tmp.Count; i++) {
-			tmp [i].setPositionAndSize (new Vector2 (-412 + 500 / cards.Count / 2 * i+500/4, 0), new Vector2 (148, 206));
+			tmp [i].setPositionAndSize (new Vector2 (-412 + 1200 / cards.Count / 2 * i+1200/4, 0), new Vector2 (148, 206));
 			tmp [i].setParent (handler.canvas_sell);
 			tmp [i].instantiateCard ();
 		}
@@ -51,10 +55,15 @@ public class Shop{
 		cards.Add (card);
 	}
 
+	public void fillCard(){
+		for (int i = 0; i < size - cards.Count; i++) {
+			handler.getMainSet ().draw (this);
+		}
+	}
+
 	public void removeCard(Card card, MainSet mainSet){
 		mainSet.addCard (card);
 		cards.Remove (card);
-		mainSet.draw (this);
 	}
 
 	public void purchaseCard(Card card, Player player){
