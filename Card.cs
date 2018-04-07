@@ -6,6 +6,8 @@ using UnityEngine.EventSystems;
 
 public class Card{
 
+	private Handler handler;
+
 	private GameObject card;
 	private GameObject clone;
 
@@ -87,6 +89,48 @@ public class Card{
 		clone.gameObject.tag = "CARD";
 	}
 
+	public void setListener(string mode){
+		switch (mode) {
+		case "purchase":
+			clone.GetComponent<Button> ().onClick.RemoveAllListeners ();
+			clone.GetComponent<Button> ().onClick.AddListener (purchase);
+			break;
+		case "sell":
+			clone.GetComponent<Button> ().onClick.RemoveAllListeners ();
+			clone.GetComponent<Button> ().onClick.AddListener (sell);
+			break;
+		case "normal":
+			clone.GetComponent<Button> ().onClick.RemoveAllListeners ();
+			break;
+		default:
+			clone.GetComponent<Button> ().onClick.RemoveAllListeners ();
+			break;
+		}
+	}
+
+	public void purchase(){
+		if (handler.getPlaying ().getBalance () >= this.cost) {
+			handler.getShop ().purchaseCard (this, handler.getPlaying ());
+			handler.getPlaying ().setBalance (handler.getPlaying ().getBalance () - this.cost);
+			this.value = this.cost;
+			handler.getShop ().displayCardPurchase ();
+		}
+	}
+
+	public void sell(){
+		handler.getPlaying ().sellCard (this, handler.getShop ());
+		handler.getPlaying ().setBalance (handler.getPlaying ().getBalance () + this.value);
+		handler.getShop ().displayCardSell ();
+	}
+
+	public void attacking(){
+		
+	}
+
+	public void deploy(){
+	
+	}
+
 	public void OnPointerEnterDelegate (PointerEventData data){
 		cardPreview = new GameObject();
 		cardPreview.AddComponent<Image> ();
@@ -111,6 +155,10 @@ public class Card{
 
 	public void skill(){
 		
+	}
+
+	public void destroyClone(){
+		GameObject.Destroy (this.clone.gameObject);
 	}
 
 	public void setAttributes(){
@@ -233,6 +281,9 @@ public class Card{
 	}
 	public void setParent(GameObject parent){
 		this.parent = parent;
+	}
+	public void setHandler(Handler handler){
+		this.handler = handler;
 	}
 
 	public string getName(){
