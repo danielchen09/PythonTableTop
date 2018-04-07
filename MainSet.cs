@@ -9,7 +9,7 @@ public class MainSet{
 	private List<Card> mainSet;
 	private int size;
 	public string[] ALL_CARDS_NAME = {"MECH", "LASER", "SHIELD", "WALL", "SPACECRAFT", "RECON", "WEAPON", "VOLCANO", "EMP", "CRYSTAL", "IRON", "STONE"};
-	public double[] ALL_CARDS_PROBABILITY = {7.5, 1.5, 6.5, 7, 7.5, 8.5, 6.5, 2.5, 2.5, 25, 12.5, 12.5};
+	public double[] ALL_CARDS_PROBABILITY = {7.5, 1.5, 6.5, 7, 8.5, 8.5, 6.5, 1.5, 1.5, 25, 12.5, 13.5};
 
 	public MainSet(int size){
 		this.mainSet = new List<Card> ();
@@ -54,7 +54,6 @@ public class MainSet{
 
 	public void drawByTag(string tag, Player player){
 		int r = Random.Range (0, mainSet.Count);
-		Debug.Log (r);
 		while (!mainSet [r].getTag ().Equals (tag)) {
 			r = Random.Range (0, mainSet.Count);
 		}
@@ -70,6 +69,23 @@ public class MainSet{
 		}
 		shop.addCard (mainSet [r]);
 		mainSet.RemoveAt (r);
+
+	}
+
+	public void drawWithDisaster(string tag1, Player player){
+		int r = Random.Range (0, mainSet.Count);
+		string disaster = (tag1.Equals ("M")) ? "VOLCANO" : "EMP";
+		while (!mainSet [r].getTag ().Equals (tag1)&&!mainSet [r].getName().Equals(disaster)) {
+			r = Random.Range (0, mainSet.Count);
+		}
+		if (mainSet [r].getName ().Equals (disaster)) {
+			player.removeCardByTag (tag1, this);
+			Debug.Log ("DISASTER");
+		}
+		else {
+			player.addCard (mainSet [r]);
+			mainSet.RemoveAt (r);
+		}
 
 	}
 
