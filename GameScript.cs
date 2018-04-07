@@ -31,6 +31,8 @@ public class GameScript : MonoBehaviour {
 
 	private List<Planet> planets;
 
+	private MainSet mainSet;
+
 	public void instantiatePlanet (GameObject parent){
 		planets.Add(new Planet ("planet_blue", parent, new Vector2(-413, 128), new Vector2(160, 160), canvas_planetInfo));
 		planets.Add(new Planet ("planet_blueBlack", parent, new Vector2(-389, -95), new Vector2(113, 113), canvas_planetInfo));
@@ -78,7 +80,8 @@ public class GameScript : MonoBehaviour {
 		canvas_sell.gameObject.SetActive (true);
 		canvas_option.gameObject.SetActive (false);
 		handler.getShop ().displayCardSell ();
-		foreach (Card card in handler.getShop().getCards()) {
+		foreach (Card card in handler.getPlaying().getCards()) {
+			card.setHandler (handler);
 			card.setListener ("sell");
 		}
 	}
@@ -86,17 +89,29 @@ public class GameScript : MonoBehaviour {
 	public void exitSell(){
 		canvas_sell.gameObject.SetActive (false);
 		canvas_option.gameObject.SetActive (true);
+		foreach (Card card in handler.getPlaying().getCards()) {
+			card.setHandler (handler);
+			card.setListener ("normal");
+		}
 	}
 
 	public void enterPurchase(){
 		canvas_purchase.gameObject.SetActive (true);
 		canvas_option.gameObject.SetActive (false);
 		handler.getShop ().displayCardPurchase ();
+		foreach (Card card in handler.getShop().getCards()) {
+			card.setHandler (handler);
+			card.setListener ("purchase");
+		}
 	}
 
 	public void exitPurchase(){
 		canvas_purchase.gameObject.SetActive (false);
 		canvas_option.gameObject.SetActive (true);
+		foreach (Card card in handler.getPlaying().getCards()) {
+			card.setHandler (handler);
+			card.setListener ("normal");
+		}
 	}
 
 	public void enterShopOption(){	
@@ -107,6 +122,11 @@ public class GameScript : MonoBehaviour {
 	public void exitShopOption(){
 		canvas_option.gameObject.SetActive (false);
 		canvas_game.gameObject.SetActive (true);
+		playing.displayCards ();
+	}
+
+	public void draw(){
+		mainSet.drawWithDisaster ("M", playing);
 		playing.displayCards ();
 	}
 		
@@ -128,6 +148,7 @@ public class GameScript : MonoBehaviour {
 		//buttons
 		GameObject.Find ("Game/button_deploy").GetComponent<Button> ().onClick.AddListener (deploy);
 		GameObject.Find ("Game/button_log").GetComponent<Button> ().onClick.AddListener (openLog);
+		GameObject.Find ("Game/button_draw").GetComponent<Button> ().onClick.AddListener (draw);
 
 		//sync data from scene 0
 		player_num = PlayerPrefs.GetInt ("player_num");
@@ -146,7 +167,7 @@ public class GameScript : MonoBehaviour {
 		planets = new List<Planet> ();
 		instantiatePlanet (canvas_game);
 
-		MainSet mainSet = new MainSet (200);
+		mainSet = new MainSet (200);
 
 		Shop shop = new Shop (8);
 
@@ -161,7 +182,7 @@ public class GameScript : MonoBehaviour {
 			canvas_sell
 		};
 
-		handler = new Handler (mainSet, shop, param);
+		handler = new Handler (mainSet, shop, param, logControl);
 
 		handler.setPlaying (playing);
 
@@ -169,9 +190,10 @@ public class GameScript : MonoBehaviour {
 		mainSet.setHandler (handler);
 		shop.setHanlder (handler);
 
-		for (int i = 0; i < 20; i++) {
+		for (int i = 0; i < 5; i++) {
 			mainSet.drawByTag ("M", playing);
 		}
+
 		playing.displayCards ();
 	}
 }
