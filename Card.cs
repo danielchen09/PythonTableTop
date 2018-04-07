@@ -109,18 +109,24 @@ public class Card{
 	}
 
 	public void purchase(){
-		if (handler.getPlaying ().getBalance () >= this.cost) {
+		if (handler.getPlaying ().getBalance () >= cost) {
 			handler.getShop ().purchaseCard (this, handler.getPlaying ());
 			handler.getPlaying ().setBalance (handler.getPlaying ().getBalance () - this.cost);
 			this.value = this.cost;
-			handler.getShop ().displayCardPurchase ();
+			this.clone.gameObject.SetActive (false);
+			if (clone_preview != null)
+				GameObject.Destroy (clone_preview.gameObject);
+
 		}
 	}
 
 	public void sell(){
 		handler.getPlaying ().sellCard (this, handler.getShop ());
 		handler.getPlaying ().setBalance (handler.getPlaying ().getBalance () + this.value);
-		handler.getShop ().displayCardSell ();
+		this.clone.gameObject.SetActive (false);
+		if (clone_preview != null)
+			GameObject.Destroy (clone_preview.gameObject);
+
 	}
 
 	public void attacking(){
