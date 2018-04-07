@@ -18,7 +18,9 @@ public class Handler{
 	public GameObject canvas_purchase;
 	public GameObject canvas_sell;
 
-	public Handler(MainSet mainSet, Shop shop, GameObject[] canvas){
+	public TextLogControl textLogControl;
+
+	public Handler(MainSet mainSet, Shop shop, GameObject[] canvas, TextLogControl textLogControl){
 		this.mainSet = mainSet;
 		this.shop = shop;
 		canvas_game = canvas [0];
@@ -29,6 +31,7 @@ public class Handler{
 		canvas_option = canvas [5];
 		canvas_purchase = canvas [6];
 		canvas_sell = canvas [7];
+		this.textLogControl = textLogControl;
 	}
 
 	public void setPlanet(Planet planet){
@@ -61,5 +64,9 @@ public class Handler{
 
 	public Shop getShop(){
 		return shop;
+	}
+
+	public TextLogControl getLogControl(){
+		return textLogControl;
 	}
 }
