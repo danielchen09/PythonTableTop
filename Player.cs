@@ -6,11 +6,13 @@ public class Player{
 
 	private string name;
 	private List<Card> cards;
-	private int money;
+	private int balance;
+
+	private Handler handler;
 
 	public Player(string name){
 		this.name = name;
-		money = 0;
+		balance = 10000;
 		cards = new List<Card> ();
 	}
 
@@ -22,9 +24,12 @@ public class Player{
 		GameObject.Destroy (GameObject.FindWithTag ("CARD"));
 		//x from -224 to 261
 		//y -252
-		for (int i = 0; i < cards.Count; i++) {
-			cards [i].setPositionAndSize (new Vector2 (-224 + 485 / cards.Count / 2 * i+485/4, -242), new Vector2 (142, 197));
-			cards [i].instantiateCard ();
+		int i=0;
+		foreach (Card card in cards) {
+			card.setPositionAndSize (new Vector2 (-224 + 485 / cards.Count / 2 * i+485/4, -242), new Vector2 (142, 197));
+			card.setParent (handler.canvas_game);
+			card.instantiateCard ();
+			i++;
 		}
 	}
 
@@ -37,13 +42,34 @@ public class Player{
 		cards.Remove (card);
 	}
 
+	public void sellCard(Card card, Shop shop){
+		shop.addCard (card);
+		cards.Remove (card);
+	}
+
 	public void removeCardByTag(string tag, MainSet mainSet){
-		for (int i = cards.Count - 1; i >= 0; i++) {
+		for (int i = cards.Count - 1; i >= 0; i--) {
 			if (cards [i].getTag ().Equals(tag)) {
 				mainSet.addCard (cards [i]);
 				cards.Remove (cards [i]);
 			}
 		}
+	}
+
+	public List<Card> getCards(){
+		return cards;
+	}
+
+	public int getBalance(){
+		return balance;
+	}
+
+	public void setBalance(int balance){
+		this.balance = balance;
+	}
+
+	public void setHandler(Handler handler){
+		this.handler = handler;
 	}
 
 }
