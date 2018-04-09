@@ -1,4 +1,4 @@
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
@@ -10,6 +10,8 @@ public class Shop{
 	private List<Card> cards;
 	private int size;
 
+	private List<Card> tmp;
+	private List<GameObject> tmpClone = new List<GameObject> ();
 
 	public Shop(int size){
 		this.size = size;
@@ -41,13 +43,18 @@ public class Shop{
 
 	public void displayCardSell(){
 		//-412 340
-		foreach (Card card in cards)
-			card.destroyClone ();
-		List<Card> tmp = handler.getPlaying ().getCards ();
+		tmp = handler.getPlaying ().getCards ();
 		for (int i = 0; i < tmp.Count; i++) {
-			tmp [i].setPositionAndSize (new Vector2 (-412 + 1200 / cards.Count / 2 * i+1200/4, 0), new Vector2 (148, 206));
+			//tmp [i].setPositionAndSize (new Vector2 (-412 + 1200 / cards.Count / 2 * i+1200/4, 0), new Vector2 (148, 206));
+			tmp [i].setPositionAndSize (new Vector2 (-346 + 700 / cards.Count * 2 * i, 0), new Vector2 (108, 151));
 			tmp [i].setParent (handler.canvas_sell);
-			tmp [i].instantiateCard ();
+			tmpClone.Add (tmp [i].instantiateCard ());
+		}
+	}
+
+	public void destroyTmp(){
+		foreach (GameObject clone in tmpClone) {
+			GameObject.Destroy (clone.gameObject);
 		}
 	}
 
@@ -57,7 +64,7 @@ public class Shop{
 
 	public void fillCard(){
 		for (int i = 0; i < size - cards.Count; i++) {
-			handler.getMainSet ().draw (this);
+			handler.getMainSet ().drawByTag ("E", this);
 		}
 	}
 

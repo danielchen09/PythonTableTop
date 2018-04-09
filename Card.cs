@@ -1,4 +1,4 @@
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
@@ -26,10 +26,12 @@ public class Card{
 	private Player owner;
 	private Planet planet_deploy;
 	private int deploy_mode;
+	private bool isSelected;
 
 	public Card(string name, GameObject parent){
 		this.name = name;
 		this.parent = parent;
+		this.isSelected = false;
 		setTag ();
 		setAttributes ();
 	}
@@ -39,13 +41,12 @@ public class Card{
 		this.parent = parent;
 		this.position = position;
 		this.size = size;
-		setAttributes ();
 		setTag ();
 
 		instantiateCard ();
 	}
 
-	private void setTag(){
+	public void setTag(){
 		if (name.Equals ("CRYSTAL") || name.Equals ("IRON") || name.Equals ("STONE"))
 			tag = "M";
 		else if (name.Equals ("EMP") || name.Equals ("VOLCANO"))
@@ -58,7 +59,7 @@ public class Card{
 		return tag;
 	}
 		
-	public void instantiateCard(){
+	public GameObject instantiateCard(){
 		card = new GameObject();
 		card.AddComponent<Image> ();
 		card.GetComponent<Image> ().sprite = Resources.Load<Sprite> ("img/cards/"+name);
@@ -87,6 +88,8 @@ public class Card{
 		clone.GetComponent<EventTrigger> ().triggers.Add (mouseEnter);
 		clone.GetComponent<EventTrigger> ().triggers.Add (mouseExit);
 		clone.gameObject.tag = "CARD";
+
+		return clone;
 	}
 
 	public void setListener(string mode){
@@ -99,6 +102,14 @@ public class Card{
 			clone.GetComponent<Button> ().onClick.RemoveAllListeners ();
 			clone.GetComponent<Button> ().onClick.AddListener (sell);
 			break;
+		case "attack":
+			clone.GetComponent<Button> ().onClick.RemoveAllListeners ();
+			clone.GetComponent<Button> ().onClick.AddListener (attacking);
+			break;
+		case "defense":
+			clone.GetComponent<Button> ().onClick.RemoveAllListeners ();
+			clone.GetComponent<Button> ().onClick.AddListener (defending);
+			break;
 		case "normal":
 			clone.GetComponent<Button> ().onClick.RemoveAllListeners ();
 			break;
@@ -106,6 +117,7 @@ public class Card{
 			clone.GetComponent<Button> ().onClick.RemoveAllListeners ();
 			break;
 		}
+
 	}
 
 	public void purchase(){
@@ -121,7 +133,7 @@ public class Card{
 	}
 
 	public void sell(){
-		handler.getPlaying ().sellCard (this, handler.getShop ());
+		handler.getPlaying ().removeCard (this, handler.getMainSet());
 		handler.getPlaying ().setBalance (handler.getPlaying ().getBalance () + this.value);
 		this.clone.gameObject.SetActive (false);
 		if (clone_preview != null)
@@ -130,11 +142,34 @@ public class Card{
 	}
 
 	public void attacking(){
-		
+		if (!isSelected && this.deploy_mode == 2) {
+			clone.GetComponent<Image> ().color = new Color (0xFF, 0x00, 0x00, 0xFF);
+			isSelected = !isSelected;
+			handler.addAttack (this.attack);
+		} else if ( this.deploy_mode == 2) {
+			clone.GetComponent<Image> ().color = new Color (0xFF, 0xFF, 0xFF, 0xFF);
+			isSelected = !isSelected;
+			handler.addAttack (-1 * this.attack);
+		}
+	}
+
+	public void defending(){
+	
 	}
 
 	public void deploy(){
 	
+	}
+
+	public void selectColorChange(){
+		Debug.Log ("CHANGE COLOR");
+		if (!isSelected) {
+			clone.GetComponent<Image> ().color = new Color (0xFF, 0x00, 0x00, 0xFF);
+			isSelected = !isSelected;
+		} else {
+			clone.GetComponent<Image> ().color = new Color (0xFF, 0xFF, 0xFF, 0xFF);
+			isSelected = !isSelected;
+		}
 	}
 
 	public void OnPointerEnterDelegate (PointerEventData data){
@@ -206,7 +241,7 @@ public class Card{
 			value = 0;
 			cost = 50;
 			defense = 0;
-			attack = setAttack (2, 1, 0);
+			attack = setAttack (2, 1);
 			deploy_mode = 2;
 			break;
 		case "RECON":
@@ -219,7 +254,7 @@ public class Card{
 		case "SHIELD":
 			value = 0;
 			cost = 30;
-			defense = setDefense (2, 2, 0);
+			defense = setDefense (2, 2);
 			attack = 0;
 			deploy_mode = 1;
 			break;
@@ -247,7 +282,7 @@ public class Card{
 		case "WALL":
 			value = 0;
 			cost = 50;
-			defense = setDefense (4, 2, 0);
+			defense = setDefense (4, 2);
 			attack = 0;
 			deploy_mode = 1;
 			break;
@@ -255,7 +290,7 @@ public class Card{
 			value = 0;
 			cost = 30;
 			defense = 0;
-			attack = setAttack (1, 1, 0);
+			attack = setAttack (1, 1);
 			deploy_mode = 2;
 			break;
 		default:
@@ -269,12 +304,16 @@ public class Card{
 		}
 	}
 
-	public int setAttack(int atk, int per, int total){
-		return atk*total/per;
+	public int setAttack(int atk, int per){
+		if (handler.getPlanet () == null)
+			return 0;
+		return atk*handler.getPlanet().getPopulation()/per;
 	}
 
-	public int setDefense(int def, int per, int total){
-		return def*total/per;
+	public int setDefense(int def, int per){
+		if (handler.getPlanet () == null)
+			return 0;
+		return def*handler.getPlanet().getPopulation()/per;
 	}
 
 	public void hide(){
@@ -290,9 +329,15 @@ public class Card{
 	}
 	public void setHandler(Handler handler){
 		this.handler = handler;
+
+		setAttributes ();
 	}
 
 	public string getName(){
 		return name;
+	}
+
+	public GameObject getClone(){
+		return clone;
 	}
 }

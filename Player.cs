@@ -1,4 +1,4 @@
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -44,12 +44,6 @@ public class Player{
 		cards.Remove (card);
 	}
 
-	public void sellCard(Card card, Shop shop){
-		shop.addCard (card);
-		card.destroyClone ();
-		cards.Remove (card);
-	}
-
 	public void removeCardByTag(string tag, MainSet mainSet){
 		for (int i = cards.Count - 1; i >= 0; i--) {
 			if (cards [i].getTag ().Equals(tag)) {
@@ -75,5 +69,6 @@ public class Player{
 	public void setHandler(Handler handler){
 		this.handler = handler;
 	}
+		
 
 }

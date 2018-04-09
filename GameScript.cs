@@ -1,4 +1,4 @@
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -24,6 +24,7 @@ public class GameScript : MonoBehaviour {
 	public GameObject canvas_sell;
 
 	private Button button_deploy;
+	public Button button_cancel;
 
 	public TextLogControl logControl;
 
@@ -44,7 +45,7 @@ public class GameScript : MonoBehaviour {
 		planets.Add(new Planet ("planet_x", parent, new Vector2(-74, 139), new Vector2(100, 100), canvas_planetInfo));
 		planets.Add(new Planet ("planet_yellowBlack", parent, new Vector2(193, -154), new Vector2(100, 100), canvas_planetInfo));
 		planets.Add(new Planet ("planet_yellowPurple", parent, new Vector2(26, -22), new Vector2(140, 140), canvas_planetInfo));
-		foreach (Planet planet in planets)
+		foreach (Planet planet in planets) 
 			planet.setLogControl (logControl);
 	}
 
@@ -54,8 +55,6 @@ public class GameScript : MonoBehaviour {
 			planet.setListener ("deploy");
 			planet.setDeployName (playing.getName());
 		}
-		round++;
-		playing = players [round % player_num];
 	}
 
 	public void openLog(){
@@ -69,6 +68,9 @@ public class GameScript : MonoBehaviour {
 		foreach (Planet planet in planets) {
 			planet.setListener ("normal");
 		}
+		Debug.Log (playing.getName ());
+		Debug.Log (playing.getCards().Count);
+		playing.displayCards ();
 	}
 
 	public void exitLog(){
@@ -77,6 +79,9 @@ public class GameScript : MonoBehaviour {
 	}
 
 	public void enterSell(){
+		foreach (Card card in handler.getPlaying().getCards()) {
+			card.destroyClone ();
+		}
 		canvas_sell.gameObject.SetActive (true);
 		canvas_option.gameObject.SetActive (false);
 		handler.getShop ().displayCardSell ();
@@ -89,6 +94,7 @@ public class GameScript : MonoBehaviour {
 	public void exitSell(){
 		canvas_sell.gameObject.SetActive (false);
 		canvas_option.gameObject.SetActive (true);
+		handler.getShop ().destroyTmp ();
 		foreach (Card card in handler.getPlaying().getCards()) {
 			card.setHandler (handler);
 			card.setListener ("normal");
@@ -122,12 +128,46 @@ public class GameScript : MonoBehaviour {
 	public void exitShopOption(){
 		canvas_option.gameObject.SetActive (false);
 		canvas_game.gameObject.SetActive (true);
+		foreach (Card card in handler.getPlaying().getCards()) {
+			card.setParent (canvas_game);
+		}
+		handler.getShop ().fillCard ();
 		playing.displayCards ();
+	}
+
+	public void onCancel(){
+		foreach (Card card in playing.getCards()) {
+			card.setListener ("normal");
+		}
+		foreach (Planet planet in planets) {
+			planet.resetColor ();
+		}
+		button_cancel.gameObject.SetActive (false);
+
+		handler.ActionInfo.text = playing.getName () + " IS PLAYING";
 	}
 
 	public void draw(){
 		mainSet.drawWithDisaster ("M", playing);
 		playing.displayCards ();
+	}
+
+	public void onAttack(){
+		button_cancel.gameObject.SetActive (true);
+		foreach (Planet planet in planets) {
+			planet.setListener ("attack1");
+		}
+		foreach (Card card in playing.getCards()) {
+			card.setAttributes ();
+		}
+		handler.ActionInfo.text = "CHOOSE PLANET TO ATTACK";
+	}
+
+	public void nextRound(){
+		round++;
+		playing = players [round % player_num];
+		handler.setPlaying (playing);
+		handler.ActionInfo.text = playing.getName () + " IS PLAYING";
 	}
 		
 	// main function
@@ -145,6 +185,7 @@ public class GameScript : MonoBehaviour {
 		canvas_option.gameObject.SetActive (false);
 		canvas_sell.gameObject.SetActive (false);
 		canvas_purchase.gameObject.SetActive (false);
+		button_cancel.gameObject.SetActive (false);
 		//buttons
 		GameObject.Find ("Game/button_deploy").GetComponent<Button> ().onClick.AddListener (deploy);
 		GameObject.Find ("Game/button_log").GetComponent<Button> ().onClick.AddListener (openLog);
@@ -182,14 +223,17 @@ public class GameScript : MonoBehaviour {
 			canvas_sell
 		};
 
-		handler = new Handler (mainSet, shop, param, logControl);
+		handler = new Handler (this, mainSet, shop, param, logControl);
 
 		handler.setPlaying (playing);
+		GameObject.Find ("Game/ActionInfo").GetComponent<Text> ().text = playing.getName () + " IS PLAYING";
 
 		playing.setHandler (handler);
 		mainSet.setHandler (handler);
 		shop.setHanlder (handler);
-
+		foreach (Planet planet in planets)
+			planet.setHandler (handler);
+		
 		for (int i = 0; i < 5; i++) {
 			mainSet.drawByTag ("M", playing);
 		}
