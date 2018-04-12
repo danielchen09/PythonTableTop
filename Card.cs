@@ -13,6 +13,9 @@ public class Card{
 
 	private GameObject cardPreview;
 	private GameObject clone_preview;
+	private GameObject costPreview;
+	private GameObject cost_clone;
+	public GameObject text;
 
 	private string name;
 	private GameObject parent;
@@ -26,7 +29,10 @@ public class Card{
 	private Player owner;
 	private Planet planet_deploy;
 	private int deploy_mode;
-	private bool isSelected;
+	public bool isSelected;
+
+	private EventTrigger.Entry mouseExit;
+	private EventTrigger.Entry mouseEnter;
 
 	public Card(string name, GameObject parent){
 		this.name = name;
@@ -75,12 +81,12 @@ public class Card{
 		clone.transform.SetParent (parent.transform);
 		GameObject.Destroy (card);
 
-		EventTrigger.Entry mouseEnter = new EventTrigger.Entry ();
+		mouseEnter = new EventTrigger.Entry ();
 		mouseEnter.eventID = EventTriggerType.PointerEnter;
 		mouseEnter.callback.AddListener ((data) => {
 			OnPointerEnterDelegate ((PointerEventData)data);
 		});
-		EventTrigger.Entry mouseExit = new EventTrigger.Entry ();
+		mouseExit = new EventTrigger.Entry ();
 		mouseExit.eventID = EventTriggerType.PointerExit;
 		mouseExit.callback.AddListener ((data) => {
 			OnPointerExitDelegate ((PointerEventData)data);
@@ -93,6 +99,16 @@ public class Card{
 	}
 
 	public void setListener(string mode){
+		EventTrigger.Entry mouseEnterS = new EventTrigger.Entry ();
+		mouseEnterS.eventID = EventTriggerType.PointerEnter;
+		mouseEnterS.callback.AddListener ((data) => {
+			OnPointerEnterDelegateShop ((PointerEventData)data);
+		});
+		EventTrigger.Entry mouseExitS = new EventTrigger.Entry ();
+		mouseExitS.eventID = EventTriggerType.PointerExit;
+		mouseExitS.callback.AddListener ((data) => {
+			OnPointerExitDelegateShop ((PointerEventData)data);
+		});
 		switch (mode) {
 		case "purchase":
 			clone.GetComponent<Button> ().onClick.RemoveAllListeners ();
@@ -109,39 +125,68 @@ public class Card{
 		case "defense":
 			clone.GetComponent<Button> ().onClick.RemoveAllListeners ();
 			clone.GetComponent<Button> ().onClick.AddListener (defending);
+
 			break;
 		case "normal":
 			clone.GetComponent<Button> ().onClick.RemoveAllListeners ();
+			clone.GetComponent<Button> ().onClick.AddListener (recon);
 			break;
 		default:
 			clone.GetComponent<Button> ().onClick.RemoveAllListeners ();
+			clone.GetComponent<Button> ().onClick.AddListener (recon);
 			break;
 		}
 
 	}
 
+	public void recon(){
+		if (this.name.Equals ("RECON")) {
+			handler.ActionInfo.text = "CLICK ON A PLANET TO DEPLOY A RECON TEAM";
+			handler.getGameScript ().button_cancel.gameObject.SetActive (true);
+			clone.GetComponent<Image> ().color = new Color (0xFF, 0x00, 0x00, 0xFF);
+			foreach (Planet planet in handler.getGameScript().planets) {
+				planet.setListener ("recon");
+			}
+			handler.setCard (this);
+		}
+	}
+
+	public void resetColor(){
+		clone.GetComponent<Image> ().color = new Color (0xFF, 0xFF, 0xFF, 0xFF);
+	}
+
 	public void purchase(){
+
 		if (handler.getPlaying ().getBalance () >= cost) {
+			handler.getGameScript ().action = true;
 			handler.getShop ().purchaseCard (this, handler.getPlaying ());
 			handler.getPlaying ().setBalance (handler.getPlaying ().getBalance () - this.cost);
 			this.value = this.cost;
 			this.clone.gameObject.SetActive (false);
 			if (clone_preview != null)
 				GameObject.Destroy (clone_preview.gameObject);
+			handler.textLogControl.logText (handler.getPlaying ().getName () + " HAS PURCHASED A CARD", Color.white);
 
 		}
+		handler.canvas_purchase.transform.Find ("text_balance").GetComponent<Text> ().text = "BALANCE: " + handler.getPlaying ().getBalance ();
 	}
 
 	public void sell(){
+
+		handler.getGameScript ().action = true;
 		handler.getPlaying ().removeCard (this, handler.getMainSet());
 		handler.getPlaying ().setBalance (handler.getPlaying ().getBalance () + this.value);
 		this.clone.gameObject.SetActive (false);
 		if (clone_preview != null)
 			GameObject.Destroy (clone_preview.gameObject);
+		handler.textLogControl.logText (handler.getPlaying ().getName () + " HAS SOLD A CARD", Color.white);
 
+		handler.canvas_sell.transform.Find ("text_balance").GetComponent<Text> ().text = "BALANCE: " + handler.getPlaying ().getBalance () + "";
 	}
 
 	public void attacking(){
+		setAttributes ();
+
 		if (!isSelected && this.deploy_mode == 2) {
 			clone.GetComponent<Image> ().color = new Color (0xFF, 0x00, 0x00, 0xFF);
 			isSelected = !isSelected;
@@ -151,18 +196,25 @@ public class Card{
 			isSelected = !isSelected;
 			handler.addAttack (-1 * this.attack);
 		}
+		handler.ActionInfo.text = "CLICK THE PLANET TO ATTACK AFTER SELECTING CARDS\nATTACK: " + handler.getAttack();
 	}
 
 	public void defending(){
-	
-	}
-
-	public void deploy(){
-	
+		setAttributes ();
+		if (!isSelected && this.deploy_mode == 1) {
+			clone.GetComponent<Image> ().color = new Color (0xFF, 0x00, 0x00, 0xFF);
+			isSelected = !isSelected;
+			handler.addDefense (this.defense);
+			handler.addCard (this);
+		} else if ( this.deploy_mode == 1) {
+			clone.GetComponent<Image> ().color = new Color (0xFF, 0xFF, 0xFF, 0xFF);
+			isSelected = !isSelected;
+			handler.addDefense (-1 * this.defense);
+		}
+		handler.ActionInfo.text = "DEFENSE: " + handler.getDefense();
 	}
 
 	public void selectColorChange(){
-		Debug.Log ("CHANGE COLOR");
 		if (!isSelected) {
 			clone.GetComponent<Image> ().color = new Color (0xFF, 0x00, 0x00, 0xFF);
 			isSelected = !isSelected;
@@ -170,6 +222,33 @@ public class Card{
 			clone.GetComponent<Image> ().color = new Color (0xFF, 0xFF, 0xFF, 0xFF);
 			isSelected = !isSelected;
 		}
+	}
+
+	public void OnPointerEnterDelegateShop (PointerEventData data){
+		
+		costPreview = new GameObject ();
+		costPreview.AddComponent<Text> ();
+		costPreview.GetComponent<Text> ().font = Resources.Load<Font> ("font/PIXEL");
+		costPreview.GetComponent<Text> ().fontSize = 20;
+		costPreview.GetComponent<Text> ().color = Color.white;
+		costPreview.GetComponent<Text> ().alignment = TextAnchor.MiddleCenter;
+		costPreview.GetComponent<Text> ().text = "COST: " + cost;
+
+		costPreview.GetComponent<RectTransform> ().anchoredPosition = new Vector2 (-25, -232);
+		costPreview.GetComponent<RectTransform> ().sizeDelta = new Vector2 (160, 46);
+		costPreview.GetComponent<RectTransform> ().localScale = new Vector3 (1, 1, 1);
+
+		costPreview.AddComponent <EventTrigger> ();
+
+		cost_clone = GameObject.Instantiate (costPreview, GameObject.Find(parent.name).GetComponent<RectTransform>(), false);
+		cost_clone.transform.SetParent (parent.transform);
+		GameObject.Destroy (costPreview);
+
+	}
+
+	public void OnPointerExitDelegateShop(PointerEventData data){
+		GameObject.Destroy (cost_clone);
+		GameObject.Destroy (costPreview);
 	}
 
 	public void OnPointerEnterDelegate (PointerEventData data){
@@ -190,12 +269,8 @@ public class Card{
 
 	}
 	public void OnPointerExitDelegate (PointerEventData data){
-		GameObject.Destroy (clone_preview);
-		GameObject.Destroy (cardPreview);
-	}
-
-	public void skill(){
-		
+		GameObject.Destroy (clone_preview.gameObject);
+		GameObject.Destroy (cardPreview.gameObject);
 	}
 
 	public void destroyClone(){

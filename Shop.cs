@@ -46,7 +46,7 @@ public class Shop{
 		tmp = handler.getPlaying ().getCards ();
 		for (int i = 0; i < tmp.Count; i++) {
 			//tmp [i].setPositionAndSize (new Vector2 (-412 + 1200 / cards.Count / 2 * i+1200/4, 0), new Vector2 (148, 206));
-			tmp [i].setPositionAndSize (new Vector2 (-346 + 700 / cards.Count * 2 * i, 0), new Vector2 (108, 151));
+			tmp [i].setPositionAndSize (new Vector2 (-346 + 800 / tmp.Count * i, 0), new Vector2 (108, 151));
 			tmp [i].setParent (handler.canvas_sell);
 			tmpClone.Add (tmp [i].instantiateCard ());
 		}

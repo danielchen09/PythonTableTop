@@ -6,7 +6,7 @@ public class MainSet{
 
 	private Handler handler;
 
-	private List<Card> mainSet;
+	public List<Card> mainSet;
 	private int size;
 	public string[] ALL_CARDS_NAME = {"MECH", "LASER", "SHIELD", "WALL", "SPACECRAFT", "RECON", "WEAPON", "VOLCANO", "EMP", "CRYSTAL", "IRON", "STONE"};
 	public double[] ALL_CARDS_PROBABILITY = {7.5, 1.5, 6.5, 7, 8.5, 8.5, 6.5, 1.5, 1.5, 25, 12.5, 13.5};
@@ -21,6 +21,7 @@ public class MainSet{
 			for (int j = 0; j < ALL_CARDS_PROBABILITY [i] * size / 100; j++) {
 				mainSet.Add (new Card(ALL_CARDS_NAME[i], handler.canvas_game, new Vector2(0,0), new Vector2(0,0)));
 				mainSet [i].setHandler (handler);
+				mainSet [i].setListener ("normal");
 				mainSet [i].hide();
 			}
 		}
@@ -72,21 +73,43 @@ public class MainSet{
 
 	}
 
-	public void drawWithDisaster(string tag1, Player player){
+	public void drawByTag(string tag, Planet planet){
 		int r = Random.Range (0, mainSet.Count);
-		string disaster = (tag1.Equals ("M")) ? "VOLCANO" : "EMP";
-		while (!mainSet [r].getTag ().Equals (tag1)&&!mainSet [r].getName().Equals(disaster)) {
+		while (!mainSet [r].getTag ().Equals (tag)) {
 			r = Random.Range (0, mainSet.Count);
 		}
-		if (mainSet [r].getName ().Equals (disaster)) {
-			player.removeCardByTag (tag1, this);
-			Debug.Log ("DISASTER");
+		planet.addCard (mainSet [r]);
+		mainSet.RemoveAt (r);
+
+	}
+
+	public void drawWithDisaster(string tag1, Player player){
+		int r = Random.Range (0, mainSet.Count);
+
+		while (!mainSet [r].getTag ().Equals (tag1)&&!mainSet [r].getTag().Equals("X")) {
+			r = Random.Range (0, mainSet.Count);
 		}
-		else {
+		if (mainSet [r].getTag().Equals("X")) {
+			if (mainSet [r].getName ().Equals ("VOLCANO")) {
+				player.removeCardByTag ("M", this);
+				handler.textLogControl.logText (handler.getPlaying ().getName () + "HAS DREW A VOLCANO", Color.white);
+			} else {
+				player.removeCardByTag ("E", this);
+				handler.textLogControl.logText (handler.getPlaying ().getName () + "HAS DREW A EMP", Color.white);
+			}
+		}else {
 			player.addCard (mainSet [r]);
 			mainSet.RemoveAt (r);
 		}
+	}
 
+	public void drawByName(string name, Player player){
+		int i = 0;
+		while (!mainSet [i].getName ().Equals (name)) {
+			i++;
+		}
+		player.addCard (mainSet [i]);
+		mainSet.RemoveAt (i);
 	}
 
 	public void addCard(Card card){

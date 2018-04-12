@@ -58,6 +58,6 @@ public class main_menu : MonoBehaviour {
 			Debug.Log (players [i]);
 			PlayerPrefs.SetString ("name_"+i, players[i]);
 		}
-		SceneManager.LoadScene ("Game");
+		SceneManager.LoadScene ("TutorialScene");
 	}
 }

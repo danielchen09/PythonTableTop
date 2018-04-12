@@ -7,7 +7,6 @@ public class TextLogControl : MonoBehaviour {
 	private List<GameObject> textItems = new List<GameObject> ();
 
 	void Start (){
-		Debug.Log ("ASDGFADSVGVSFAVSAD");
 	}
 
 	public void logText(string text, Color color){
